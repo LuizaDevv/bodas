@@ -37,7 +37,6 @@
   <nav class="nav" aria-label="Abas do painel">
     <button class="active" data-tab="confirmados"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M17 11l2 2 4-4"/></svg>Confirmados</button>
     <button data-tab="mensagens"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>Mensagens</button>
-    <button data-tab="pdfs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h8M8 9h2"/></svg>PDFs</button>
   </nav>
 
   <main>
@@ -54,16 +53,6 @@
       <div class="grid" id="messagesGrid"></div>
     </section>
 
-    <section id="pdfs" class="panel">
-      <div class="section-head"><div><h2>PDFs</h2><p>Gere uma mensagem individual ou todas em A4 com 4 cartões A6 por folha.</p></div></div>
-      <div class="card pdf-tools">
-        <div class="pdf-note"><strong>Formato de impressão:</strong> cada folha A4 terá 4 mensagens em tamanho A6, prontas para cortar. O botão “PDF de todas” gera todas as mensagens recebidas.</div>
-        <div class="select-row"><select id="pdfSelect"></select><button class="btn gold" onclick="printSelectedPDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>PDF desta</button></div>
-        <button class="btn ghost" onclick="printAllPDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h8"/></svg>Gerar PDF com todas as mensagens</button>
-        <div class="status" id="statusMsg"></div>
-        <div class="a6-preview" id="a6Preview"></div>
-      </div>
-    </section>
   </main>
 </div>
 
@@ -84,9 +73,15 @@ function formatDate(v){if(!v)return '';const d=new Date(v);return Number.isNaN(d
 function normalizar(row){return{id:row.id,familia:row.familia||'',quantidade:row.quantidade||row.qtd||0,participantes:Array.isArray(row.participantes)?row.participantes:(row.nomes||[]),participacao:row.participacao||row.almoco||'',mensagem:row.mensagem||'',created_at:row.created_at||row.data||''};}
 function mensagens(){return data.filter(x=>(x.mensagem||'').trim());}
 async function carregarDados(){if(!sb){render();return;}countRows.textContent='Carregando...';const {data:rows,error}=await sb.from(TABLE_NAME).select('*').order('created_at',{ascending:false});if(error){console.error(error);tbody.innerHTML='<tr><td colspan="6" class="empty">Erro ao carregar. Confira URL, chave, tabela e políticas do Supabase.</td></tr>';return;}data=(rows||[]).map(normalizar);render();}
-function render(){const q=(document.getElementById('searchInput')?.value||'').toLowerCase();const filtered=data.filter(x=>((x.familia||'')+' '+(x.participantes||[]).join(' ')+' '+(x.participacao||'')).toLowerCase().includes(q));const msgs=mensagens();countRows.textContent=filtered.length+' registros';statPessoas.textContent=data.reduce((s,x)=>s+(Number(x.quantidade)||0),0);statMensagens.textContent=msgs.length;statAlmoco.textContent=data.filter(x=>(x.participacao||'').toLowerCase().includes('almoço')).reduce((s,x)=>s+(Number(x.quantidade)||0),0);tbody.innerHTML=filtered.map(x=>{const i=data.indexOf(x);return`<tr><td data-label="Família"><strong>${escapeHtml(x.familia)}</strong><br><span class="muted">${formatDate(x.created_at)}</span></td><td data-label="Participantes">${(x.participantes||[]).map(n=>`<div>${escapeHtml(n)}</div>`).join('')}</td><td data-label="Qtd."><span class="pill">${escapeHtml(x.quantidade)}</span></td><td data-label="Almoço">${escapeHtml(x.participacao)}</td><td data-label="Mensagem">${x.mensagem?'<span class="pill ok">Sim</span>':'<span class="muted">Não</span>'}</td><td data-label="Ações"><div class="row-actions">${x.mensagem?`<button class="mini-btn" onclick="goPDF(${i})">PDF</button>`:''}<button class="mini-btn" onclick="removeItem(${i})">Excluir</button></div></td></tr>`}).join('')||'<tr><td colspan="6" class="empty">Nenhum registro encontrado.</td></tr>';messagesGrid.innerHTML=msgs.map(x=>{const i=data.indexOf(x);return`<article class="message-card"><h3>${escapeHtml(x.familia)}</h3><div class="names">${escapeHtml((x.participantes||[]).join(', '))}</div><blockquote>“${escapeHtml(x.mensagem)}”</blockquote><button class="mini-btn" onclick="goPDF(${i})">Gerar PDF desta</button></article>`}).join('')||'<div class="card empty">Nenhuma mensagem recebida ainda.</div>';pdfSelect.innerHTML=msgs.map(x=>`<option value="${data.indexOf(x)}">${escapeHtml(x.familia)}</option>`).join('');renderA6Preview();}
-function renderA6Preview(){const msgs=mensagens().slice(0,4);a6Preview.innerHTML=msgs.map(x=>`<div class="mini-card"><div><div class="small">Bodas de Diamante</div><h4>João Francisco & Quitéria</h4><div class="small">${escapeHtml(x.familia)}</div></div><p>“${escapeHtml(x.mensagem)}”</p><span>${escapeHtml((x.participantes||[]).join(', '))}</span></div>`).join('')||'<div class="empty">Nenhuma mensagem para pré-visualizar.</div>';}
-function goPDF(i){document.querySelector('[data-tab="pdfs"]').click();setTimeout(()=>{pdfSelect.value=i;statusMsg.textContent='Mensagem selecionada: '+(data[i]?.familia||'');},60)}
+function render(){const q=(document.getElementById('searchInput')?.value||'').toLowerCase();const filtered=data.filter(x=>((x.familia||'')+' '+(x.participantes||[]).join(' ')+' '+(x.participacao||'')).toLowerCase().includes(q));const msgs=mensagens();countRows.textContent=filtered.length+' registros';statPessoas.textContent=data.reduce((s,x)=>s+(Number(x.quantidade)||0),0);statMensagens.textContent=msgs.length;statAlmoco.textContent=data.filter(x=>(x.participacao||'').toLowerCase().includes('almoço')).reduce((s,x)=>s+(Number(x.quantidade)||0),0);tbody.innerHTML=filtered.map(x=>{const i=data.indexOf(x);return`<tr><td data-label="Família"><strong>${escapeHtml(x.familia)}</strong><br><span class="muted">${formatDate(x.created_at)}</span></td><td data-label="Participantes">${(x.participantes||[]).map(n=>`<div>${escapeHtml(n)}</div>`).join('')}</td><td data-label="Qtd."><span class="pill">${escapeHtml(x.quantidade)}</span></td><td data-label="Almoço">${escapeHtml(x.participacao)}</td><td data-label="Mensagem">${x.mensagem?'<span class="pill ok">Sim</span>':'<span class="muted">Não</span>'}</td><td data-label="Ações"><div class="row-actions">${x.mensagem?`<button class="mini-btn" onclick="goPDF(${i})">PDF</button>`:''}<button class="mini-btn" onclick="removeItem(${i})">Excluir</button></div></td></tr>`}).join('')||'<tr><td colspan="6" class="empty">Nenhum registro encontrado.</td></tr>';messagesGrid.innerHTML=msgs.map(x=>{const i=data.indexOf(x);return`<article class="message-card"><h3>${escapeHtml(x.familia)}</h3><div class="names">${escapeHtml((x.participantes||[]).join(', '))}</div><blockquote>“${escapeHtml(x.mensagem)}”</blockquote><button class="mini-btn" onclick="goPDF(${i})">Gerar PDF desta</button></article>`}).join('')||'<div class="card empty">Nenhuma mensagem recebida ainda.</div>';}
+function goPDF(i){
+  const item=data[i];
+  if(!item||!item.mensagem){
+    alert('Mensagem não encontrada.');
+    return;
+  }
+  openPrint([item],'Mensagem individual');
+}
 async function removeItem(i){const item=data[i];if(!item||!confirm('Deseja excluir esta confirmação?'))return;if(sb&&item.id){const {error}=await sb.from(TABLE_NAME).delete().eq('id',item.id);if(error){console.error(error);alert('Não foi possível excluir. Confira a política de DELETE no Supabase.');return;}}data.splice(i,1);render();}
 function cardHTML(x){return`<article class="a6-card">
   <div class="corner tl"></div><div class="corner br"></div>
@@ -98,19 +93,23 @@ function cardHTML(x){return`<article class="a6-card">
 function buildPrintHTML(items,title){
   const sheets=[];
   for(let i=0;i<items.length;i+=4){
-    sheets.push(`<section class="sheet">${items.slice(i,i+4).map(cardHTML).join('')}</section>`);
+    const group=items.slice(i,i+4);
+    while(group.length<4){ group.push(null); }
+    sheets.push(`<section class="sheet">${group.map(x=>x ? cardHTML(x) : '<div class="a6-blank"></div>').join('')}</section>`);
   }
   return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
-  @page{size:A4 portrait;margin:0}
+  @page{size:210mm 297mm;margin:0}
   *{box-sizing:border-box}
-  html,body{margin:0;padding:0;background:#fff;color:#132238;font-family:Inter,system-ui,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .sheet{width:210mm;height:297mm;display:grid;grid-template-columns:105mm 105mm;grid-template-rows:148.5mm 148.5mm;background:#fff;page-break-after:always;break-after:page}
+  html,body{margin:0;padding:0;width:210mm;min-height:297mm;background:#fff;color:#132238;font-family:Inter,system-ui,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sheet{width:210mm;height:297mm;margin:0;padding:0;display:grid;grid-template-columns:105mm 105mm;grid-template-rows:148.5mm 148.5mm;background:#fff;overflow:hidden;page-break-after:always;break-after:page}
   .sheet:last-child{page-break-after:auto;break-after:auto}
-  .a6-card{width:105mm;height:148.5mm;padding:9mm 7mm 7.5mm;background:linear-gradient(180deg,#fbfdff 0%,#eef7ff 100%);border:.28mm solid rgba(142,197,255,.65);position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;text-align:center;break-inside:avoid;color:#132238}
+  .a6-card,.a6-blank{width:105mm;height:148.5mm;margin:0;padding:0;break-inside:avoid;page-break-inside:avoid;overflow:hidden}
+  .a6-blank{background:#fff;border:.12mm solid rgba(0,0,0,.05)}
+  .a6-card{padding:9mm 7mm 7.5mm;background:linear-gradient(180deg,#fbfdff 0%,#eef7ff 100%);border:.28mm solid rgba(142,197,255,.65);position:relative;display:flex;flex-direction:column;justify-content:space-between;text-align:center;color:#132238}
   .a6-card:before{content:'';position:absolute;inset:4.8mm;border:.22mm solid rgba(38,76,120,.24);pointer-events:none}
   .a6-card:after{content:'';position:absolute;left:-28mm;top:-28mm;width:76mm;height:76mm;border-radius:50%;background:radial-gradient(circle,rgba(142,197,255,.36),rgba(142,197,255,.10) 42%,transparent 70%);pointer-events:none}
   .corner{position:absolute;width:23mm;height:23mm;pointer-events:none;z-index:2}
@@ -125,7 +124,7 @@ function buildPrintHTML(items,title){
   blockquote{font-family:Fraunces,Georgia,serif;font-size:15pt;line-height:1.38;color:#17243a;margin:0 auto;max-width:86mm;font-weight:400}
   .sign{font-family:Fraunces,Georgia,serif;font-size:12.2pt;line-height:1.18;color:#2d73a9}.sign span{color:#2d73a9}
   .date{margin-top:4mm;color:#697b8d;font-size:8.4pt;font-weight:700}
-  @media print{.sheet{page-break-after:always}.sheet:last-child{page-break-after:auto}}
+  @media print{html,body{width:210mm;height:auto}.sheet{page-break-after:always}.sheet:last-child{page-break-after:auto}}
   </style></head><body>${sheets.join('')}</body></html>`;
 }
 function openPrint(items,title){
@@ -149,7 +148,6 @@ function openPrint(items,title){
     setTimeout(()=>frame.remove(),1200);
   },500);
 }
-function printSelectedPDF(){const idx=Number(pdfSelect.value);const item=data[idx];if(!item||!item.mensagem){alert('Selecione uma mensagem.');return;}openPrint([item],'Mensagem individual');}
 function printAllPDF(){openPrint(mensagens(),'Todas as mensagens');}
 carregarDados();
 </script>
