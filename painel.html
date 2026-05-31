@@ -4,89 +4,69 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Painel — Bodas de Diamante</title>
+<meta name="description" content="Painel de confirmações e mensagens das Bodas de Diamante." />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
-  --bg:#0b0e14;--panel:#111620;--card:#151b26;--card2:#10151e;--text:#f5f1e8;--soft:#c9c0ad;--muted:#8d8678;
-  --line:rgba(245,241,232,.10);--gold:#e6c786;--gold2:#a98643;--ice:#d7edf6;--ok:#9fd8b4;
-  --serif:'Fraunces',serif;--sans:'Inter',system-ui,-apple-system,sans-serif;
+  --bg:#050b1a;--bg2:#0a1530;--surface:rgba(15,28,61,.72);--surface2:rgba(255,255,255,.035);
+  --ink:#f4f8ff;--soft:#cfdcf5;--muted:#8aa0c8;--line:rgba(180,210,255,.18);
+  --blue:#8ec5ff;--blue2:#4aa3ff;--diamond:#b8e0ff;--gold:#d8b76a;--gold2:#a27a2d;
+  --ok:#9fd8b4;--danger:#ffb4b4;--serif:'Fraunces',Georgia,serif;--sans:'Inter',system-ui,-apple-system,sans-serif;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--sans);background:radial-gradient(700px 420px at 20% -10%,rgba(230,199,134,.12),transparent 55%),radial-gradient(700px 420px at 100% 20%,rgba(215,237,246,.10),transparent 55%),var(--bg);color:var(--text);min-height:100vh}
-.app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
-.side{border-right:1px solid var(--line);padding:28px 20px;background:rgba(17,22,32,.72);backdrop-filter:blur(18px);position:sticky;top:0;height:100vh}
-.brand{padding:18px;border:1px solid var(--line);border-radius:28px;background:linear-gradient(180deg,rgba(245,241,232,.05),rgba(245,241,232,.02))}
-.kicker{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px}
-h1{font-family:var(--serif);font-size:34px;line-height:1.02;font-weight:400;margin-bottom:12px}
-.brand p{color:var(--soft);line-height:1.6;font-size:14px}
-.nav{display:grid;gap:10px;margin-top:18px}.nav button{border:1px solid var(--line);background:transparent;color:var(--soft);border-radius:16px;padding:15px 16px;text-align:left;font-weight:700;cursor:pointer;transition:.25s}.nav button.active,.nav button:hover{background:rgba(230,199,134,.12);border-color:rgba(230,199,134,.32);color:var(--text)}
-.main{padding:28px;max-width:1180px;width:100%;margin:0 auto}.topbar{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:22px}h2{font-family:var(--serif);font-size:38px;font-weight:400}.topbar p{color:var(--muted);margin-top:6px}
-.panel{display:none}.panel.active{display:block}.card,.message-card{border:1px solid var(--line);border-radius:26px;background:linear-gradient(180deg,rgba(245,241,232,.055),rgba(245,241,232,.018));box-shadow:0 20px 70px rgba(0,0,0,.18)}.card{padding:20px}.toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:16px}.search,select{width:100%;border:1px solid var(--line);background:rgba(11,14,20,.55);color:var(--text);border-radius:16px;padding:15px 16px;font-family:var(--sans);outline:none}.search:focus,select:focus{border-color:rgba(230,199,134,.55)}.pill{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:7px 11px;color:var(--soft);font-size:12px;font-weight:700;white-space:nowrap}.pill.ok{border-color:rgba(159,216,180,.35);color:var(--ok);background:rgba(159,216,180,.08)}.muted{color:var(--muted)}
-.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:760px}.table th{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);text-align:left;padding:14px 12px;border-bottom:1px solid var(--line)}.table td{padding:16px 12px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--soft);line-height:1.55}.table strong{color:var(--text)}.mini-btn,.btn{border:1px solid rgba(230,199,134,.28);background:rgba(230,199,134,.10);color:var(--gold);border-radius:999px;padding:10px 13px;font-weight:800;cursor:pointer}.btn.gold{background:linear-gradient(135deg,#f3dfaa,var(--gold));color:#14100c;border:none}.mini-btn{font-size:12px;margin:2px 0}
-.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.message-card{padding:24px;position:relative;overflow:hidden}.message-card:before{content:"";position:absolute;inset:12px;border:1px solid rgba(230,199,134,.20);border-radius:20px;pointer-events:none}.message-card .from{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:18px;position:relative}.message-card h3{font-family:var(--serif);font-size:24px;font-weight:400;color:var(--text)}.message-card p{font-family:var(--serif);font-size:21px;line-height:1.55;color:var(--soft);position:relative}.empty{color:var(--muted);padding:26px;text-align:center}.preview{background:#efe7d7;color:#2b241c;border:0;border-radius:24px;min-height:620px;display:flex;align-items:stretch;justify-content:center;padding:18px}.pdfpage{width:100%;min-height:580px;padding:42px 36px;text-align:center;display:flex;flex-direction:column;justify-content:space-between;border:1.5px solid #d4b46f;margin:0;border-radius:0;background:#f8f1e4;position:relative;overflow:hidden}.pdfpage:before,.pdfpage:after{content:"";position:absolute;width:122px;height:122px;pointer-events:none}.pdfpage:before{top:16px;left:16px;border-top:1px solid rgba(54,48,39,.58);border-left:1px solid rgba(54,48,39,.58)}.pdfpage:after{right:16px;bottom:16px;border-right:1px solid rgba(54,48,39,.58);border-bottom:1px solid rgba(54,48,39,.58)}.pdfpage .small{letter-spacing:.34em;text-transform:uppercase;color:#a27a2d;font-size:12px;font-weight:800}.pdfpage h2{font-family:var(--serif);font-size:42px;font-weight:500;line-height:1.08;margin:26px 0;color:#2f261e;letter-spacing:-.03em}.pdfpage blockquote{font-family:var(--serif);font-size:33px;line-height:1.5;margin:46px auto 38px;color:#3b2f25;max-width:800px;font-weight:400}.pdfpage .sign{font-family:var(--serif);font-size:28px;line-height:1.18;color:#a27a2d}.pdfpage .date{margin-top:34px;color:#776b5b;font-size:16px;font-weight:500}.pdf-layout{grid-template-columns:420px 1fr}.pdf-select-card{align-self:start}.actions-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-@media(max-width:860px){.app{display:block}.side{position:relative;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:18px 16px}.brand{padding:16px;border-radius:22px}h1{font-size:29px}.nav{display:flex;overflow-x:auto;gap:8px;padding-bottom:4px}.nav button{white-space:nowrap;padding:12px 14px}.main{padding:18px 14px 30px}.topbar{display:block}h2{font-size:32px}.grid2,.pdf-layout{grid-template-columns:1fr}.table{min-width:0}.table thead{display:none}.table,.table tbody,.table tr,.table td{display:block;width:100%}.table tr{border:1px solid var(--line);border-radius:20px;margin-bottom:12px;padding:10px;background:rgba(245,241,232,.025)}.table td{border:0;padding:8px 6px}.table td:before{content:attr(data-label);display:block;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;font-weight:800}.toolbar{display:grid}.message-card{padding:22px}.message-card .from{display:block}.message-card .from .mini-btn{margin-top:10px}.message-card p{font-size:20px}.preview{min-height:520px;padding:10px}.pdfpage{min-height:500px;padding:34px 18px}.pdfpage:before,.pdfpage:after{width:90px;height:90px}.pdfpage h2{font-size:34px}.pdfpage .small{font-size:10px;letter-spacing:.24em}.pdfpage blockquote{font-size:25px;margin:34px 0}.pdfpage .sign{font-size:22px}.pdfpage .date{font-size:14px}}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{min-height:100vh;background:radial-gradient(900px 520px at 50% -10%,rgba(74,163,255,.18),transparent 60%),radial-gradient(720px 420px at 100% 12%,rgba(216,183,106,.10),transparent 58%),radial-gradient(650px 420px at 0 100%,rgba(142,197,255,.08),transparent 58%),var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased}.sky{position:fixed;inset:0;pointer-events:none;opacity:.55;background-image:radial-gradient(1px 1px at 8% 18%,#fff,transparent),radial-gradient(1px 1px at 28% 42%,#cfe4ff,transparent),radial-gradient(1.2px 1.2px at 46% 14%,#fff,transparent),radial-gradient(1px 1px at 72% 32%,#b8d8ff,transparent),radial-gradient(1.4px 1.4px at 86% 55%,#fff,transparent),radial-gradient(1px 1px at 18% 78%,#cfe4ff,transparent),radial-gradient(1px 1px at 60% 86%,#fff,transparent);animation:twinkleBg 6s ease-in-out infinite}@keyframes twinkleBg{50%{opacity:.9}}.app{position:relative;z-index:1;width:min(1180px,100%);margin:0 auto;padding:26px}.hero{border:1px solid var(--line);border-radius:30px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018));box-shadow:0 24px 80px rgba(0,0,0,.22);padding:26px;display:grid;gap:24px}.brand{display:flex;align-items:center;gap:16px}.mark{width:54px;height:54px;border:1px solid rgba(216,183,106,.38);border-radius:18px;display:grid;place-items:center;background:rgba(216,183,106,.06);box-shadow:0 0 26px rgba(216,183,106,.10)}.mark svg{width:30px;height:30px}.kicker{font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);font-weight:800}.brand h1{font-family:var(--serif);font-weight:400;font-size:clamp(34px,5vw,54px);line-height:1;margin-top:8px}.brand p{color:var(--soft);margin-top:8px}.top-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.stat{border:1px solid var(--line);border-radius:22px;background:rgba(5,11,26,.38);padding:18px;display:flex;gap:12px;align-items:center}.stat svg{width:22px;height:22px;color:var(--gold);flex:0 0 auto}.stat b{display:block;font-family:var(--serif);font-size:32px;font-weight:400;color:var(--diamond);line-height:1}.stat span{display:block;color:var(--muted);font-size:13px;margin-top:4px}.nav{display:flex;gap:10px;margin:22px 0 18px;overflow:auto;padding-bottom:2px}.nav button,.btn,.icon-btn{border:1px solid var(--line);border-radius:999px;background:rgba(15,28,61,.56);color:var(--soft);font:800 13px var(--sans);letter-spacing:.08em;text-transform:uppercase;padding:13px 16px;display:inline-flex;gap:9px;align-items:center;justify-content:center;cursor:pointer;transition:.2s;white-space:nowrap}.nav button svg,.btn svg,.icon-btn svg{width:18px;height:18px}.nav button.active,.nav button:hover,.btn:hover,.icon-btn:hover{border-color:rgba(216,183,106,.46);background:rgba(216,183,106,.12);color:var(--ink)}.btn.gold{background:linear-gradient(135deg,#f1dca2,var(--gold));color:#10151e;border:none}.btn.ghost{background:transparent}.btn.danger{color:var(--danger);border-color:rgba(255,180,180,.25)}.panel{display:none}.panel.active{display:block}.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin:22px 0 14px}.section-head h2{font-family:var(--serif);font-weight:400;font-size:34px}.section-head p{color:var(--muted);font-size:15px}.card{border:1px solid var(--line);border-radius:26px;background:linear-gradient(180deg,rgba(255,255,255,.052),rgba(255,255,255,.018));box-shadow:0 20px 60px rgba(0,0,0,.18);padding:18px}.toolbar{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;margin-bottom:14px}.search,select{width:100%;border:1px solid var(--line);background:rgba(5,11,26,.58);color:var(--ink);border-radius:18px;padding:15px 16px;font:500 15px var(--sans);outline:none}.search:focus,select:focus{border-color:rgba(216,183,106,.55);box-shadow:0 0 0 3px rgba(216,183,106,.08)}.pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:7px 10px;color:var(--soft);font-size:12px;font-weight:800;white-space:nowrap}.pill.ok{border-color:rgba(159,216,180,.32);color:var(--ok);background:rgba(159,216,180,.08)}.muted{color:var(--muted)}.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:780px}.table th{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);text-align:left;padding:14px 12px;border-bottom:1px solid var(--line)}.table td{padding:16px 12px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--soft)}.table strong{color:var(--ink);font-size:16px}.row-actions{display:flex;gap:8px;flex-wrap:wrap}.mini-btn{border:1px solid rgba(216,183,106,.28);background:rgba(216,183,106,.10);color:var(--gold);border-radius:999px;padding:9px 11px;font:800 12px var(--sans);cursor:pointer;display:inline-flex;align-items:center;gap:7px}.mini-btn svg{width:15px;height:15px}.mini-btn:hover{background:rgba(216,183,106,.16)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.message-card{border:1px solid var(--line);border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,.052),rgba(255,255,255,.018));padding:22px;position:relative;overflow:hidden}.message-card:before{content:'◇';position:absolute;right:22px;top:16px;color:rgba(216,183,106,.30);font-size:22px}.message-card h3{font-family:var(--serif);font-size:25px;font-weight:400;color:var(--diamond);padding-right:35px}.message-card .names{color:var(--muted);font-size:14px;margin:5px 0 18px}.message-card blockquote{font-family:var(--serif);font-size:22px;line-height:1.55;color:var(--soft);margin:0 0 18px}.empty{padding:28px;text-align:center;color:var(--muted)}.pdf-tools{display:grid;grid-template-columns:1fr;gap:12px}.pdf-note{border:1px solid rgba(216,183,106,.20);border-radius:22px;padding:18px;background:rgba(216,183,106,.06);color:var(--soft)}.pdf-note strong{color:var(--ink)}.select-row{display:grid;grid-template-columns:1fr auto;gap:10px}.status{margin-top:12px;color:var(--gold);font-size:14px;min-height:1.4em}.a6-preview{margin-top:18px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.mini-card{aspect-ratio:1.414/1;border:1px solid rgba(142,197,255,.45);background:linear-gradient(180deg,#f8fbff,#eef6ff);color:#142238;border-radius:10px;padding:12px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}.mini-card:before{content:'';position:absolute;inset:8px;border:1px solid rgba(38,76,120,.18);pointer-events:none}.mini-card:after{content:'◇';position:absolute;top:8px;right:10px;color:rgba(74,163,255,.30)}.mini-card .small{font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:#2d73a9;font-weight:800}.mini-card h4{font-family:var(--serif);font-weight:500;font-size:15px;color:#101827}.mini-card p{font-family:var(--serif);font-size:13px;line-height:1.3;color:#17243a}.mini-card span{font-size:9px;color:#2d73a9}.hidden-print-area{display:none}@media(max-width:760px){.app{padding:14px}.hero{padding:18px;border-radius:24px}.brand{align-items:flex-start}.mark{width:48px;height:48px;border-radius:16px}.stats{grid-template-columns:1fr}.toolbar,.select-row{grid-template-columns:1fr}.section-head{display:block}.grid{grid-template-columns:1fr}.table{min-width:0}.table thead{display:none}.table,.table tbody,.table tr,.table td{display:block;width:100%}.table tr{border:1px solid var(--line);border-radius:20px;margin-bottom:12px;padding:10px;background:rgba(255,255,255,.025)}.table td{border:0;padding:8px 6px}.table td:before{content:attr(data-label);display:block;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;font-weight:800}.a6-preview{grid-template-columns:1fr 1fr}.nav button{padding:12px 13px}}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+<div class="sky" aria-hidden="true"></div>
 <div class="app">
-  <aside class="side">
+  <header class="hero">
     <div class="brand">
-      <div class="kicker">Painel RSVP</div>
-      <h1>Bodas de Diamante</h1>
-      <p>Presenças, mensagens e PDFs decorados para João Francisco & Quitéria.</p>
+      <div class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 24L25 10H39L50 24L32 55L14 24Z" stroke="currentColor" stroke-width="2"/><path d="M14 24H50M25 10L30 24L32 55M39 10L34 24L32 55M30 24H34" stroke="currentColor" stroke-width="1.5" opacity=".75"/></svg></div>
+      <div><div class="kicker">Painel RSVP</div><h1>Bodas de Diamante</h1><p>Confirmações, mensagens e PDFs em A6 para João Francisco & Quitéria.</p></div>
     </div>
-    <div class="nav">
-      <button class="active" data-tab="confirmados">Confirmados</button>
-      <button data-tab="mensagens">Mensagens</button>
-      <button data-tab="pdfs">PDFs</button>
+    <div class="stats">
+      <div class="stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><div><b id="statPessoas">0</b><span>Pessoas</span></div></div>
+      <div class="stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M22 6l-10 7L2 6"/></svg><div><b id="statMensagens">0</b><span>Mensagens</span></div></div>
+      <div class="stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 3v18"/><path d="M8 3v18"/><path d="M4 8h4"/><path d="M14 3v8a3 3 0 0 0 6 0V3"/><path d="M17 14v7"/></svg><div><b id="statAlmoco">0</b><span>Almoço</span></div></div>
     </div>
-  </aside>
-  <main class="main">
-    <div class="topbar">
-      <div>
-        <h2 id="pageTitle">Confirmados</h2>
-        <p id="pageSub">Lista de famílias e participantes.</p>
-      </div>
-    </div>
+  </header>
 
+  <nav class="nav" aria-label="Abas do painel">
+    <button class="active" data-tab="confirmados"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M17 11l2 2 4-4"/></svg>Confirmados</button>
+    <button data-tab="mensagens"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>Mensagens</button>
+    <button data-tab="pdfs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h8M8 9h2"/></svg>PDFs</button>
+  </nav>
+
+  <main>
     <section id="confirmados" class="panel active">
+      <div class="section-head"><div><h2>Confirmados</h2><p>Lista de famílias e participantes recebidos pelo convite.</p></div><button class="btn ghost" onclick="carregarDados()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>Atualizar</button></div>
       <div class="card">
-        <div class="toolbar">
-          <input id="searchInput" class="search" placeholder="Buscar por família ou participante..." oninput="render()">
-          <span class="pill" id="countRows">0 registros</span>
-        </div>
-        <div class="table-wrap">
-          <table class="table">
-            <thead><tr><th>Família</th><th>Participantes</th><th>Qtd.</th><th>Almoço</th><th>Mensagem</th><th>Ações</th></tr></thead>
-            <tbody id="tbody"></tbody>
-          </table>
-        </div>
+        <div class="toolbar"><input id="searchInput" class="search" placeholder="Buscar família, participante ou almoço..." oninput="render()"><span class="pill" id="countRows">0 registros</span></div>
+        <div class="table-wrap"><table class="table"><thead><tr><th>Família</th><th>Participantes</th><th>Qtd.</th><th>Almoço</th><th>Mensagem</th><th>Ações</th></tr></thead><tbody id="tbody"></tbody></table></div>
       </div>
     </section>
 
     <section id="mensagens" class="panel">
-      <div class="grid2" id="messagesGrid"></div>
+      <div class="section-head"><div><h2>Mensagens</h2><p>Recados deixados para o casal.</p></div><button class="btn gold" onclick="printAllPDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>PDF de todas</button></div>
+      <div class="grid" id="messagesGrid"></div>
     </section>
 
     <section id="pdfs" class="panel">
-      <div class="grid2 pdf-layout">
-        <div class="card pdf-select-card">
-          <div class="kicker">Mensagem decorada</div>
-          <div class="toolbar" style="margin-top:14px">
-            <select id="pdfSelect" class="search" onchange="renderPDFPreview()"></select>
-          </div>
-          <div class="actions-row">
-            <button class="btn gold" onclick="printSelectedPDF()">Baixar/Imprimir PDF</button>
-          </div>
-        </div>
-        <div class="preview"><div class="pdfpage" id="pdfPreview"></div></div>
+      <div class="section-head"><div><h2>PDFs</h2><p>Gere uma mensagem individual ou todas em A4 com 4 cartões A6 por folha.</p></div></div>
+      <div class="card pdf-tools">
+        <div class="pdf-note"><strong>Formato de impressão:</strong> cada folha A4 terá 4 mensagens em tamanho A6, prontas para cortar. O botão “PDF de todas” gera todas as mensagens recebidas.</div>
+        <div class="select-row"><select id="pdfSelect"></select><button class="btn gold" onclick="printSelectedPDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>PDF desta</button></div>
+        <button class="btn ghost" onclick="printAllPDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h8"/></svg>Gerar PDF com todas as mensagens</button>
+        <div class="status" id="statusMsg"></div>
+        <div class="a6-preview" id="a6Preview"></div>
       </div>
     </section>
   </main>
 </div>
+
 <script>
 const SUPABASE_URL = "https://yssmxwenzecgtwbilcmn.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_MVwXYm50sunwbC0jWrpbmA_HyKN-WFE";
@@ -95,231 +75,82 @@ const TABLE_NAME = "confirmacoes_bodas";
 let data = [];
 let sb = null;
 
-const tabs = {
-  confirmados:['Confirmados','Lista de famílias e participantes.'],
-  mensagens:['Mensagens','Recados enviados para o casal.'],
-  pdfs:['PDFs','Cartões decorados com as mensagens.']
-};
+function supabaseConfigurado(){return SUPABASE_URL.startsWith('https://') && SUPABASE_URL.includes('.supabase.co') && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY.length > 40 && window.supabase;}
+if(supabaseConfigurado()){sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);}else{data=[{id:'exemplo-1',familia:'Família Santos',quantidade:2,participantes:['Luiza','Maria'],participacao:'Sim, participaremos da missa e do almoço',mensagem:'Te amamos. Que Deus continue abençoando essa história linda de amor e união.',created_at:'2026-05-31T12:00:00'},{id:'exemplo-2',familia:'Família Oliveira',quantidade:3,participantes:['Ana','Carlos','Bia'],participacao:'Participaremos apenas da missa',mensagem:'Vocês são exemplo de carinho, fé e companheirismo. Parabéns por esses 60 anos de amor.',created_at:'2026-05-31T12:00:00'},{id:'exemplo-3',familia:'Família Martins',quantidade:4,participantes:['Rita','Paulo','João','Clara'],participacao:'Sim, participaremos da missa e do almoço',mensagem:'Que alegria celebrar este dia tão especial com vocês. Amamos muito essa família.',created_at:'2026-05-31T12:00:00'},{id:'exemplo-4',familia:'Família Costa',quantidade:1,participantes:['Lúcia'],participacao:'Não poderemos comparecer',mensagem:'Mesmo de longe, envio meu carinho e minhas orações por vocês.',created_at:'2026-05-31T12:00:00'}];}
 
-function supabaseConfigurado(){
-  return SUPABASE_URL.startsWith('https://') &&
-         SUPABASE_URL.includes('.supabase.co') &&
-         SUPABASE_ANON_KEY &&
-         SUPABASE_ANON_KEY.length > 40 &&
-         window.supabase;
-}
-
-if (supabaseConfigurado()){
-  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-} else {
-  data = [
-    {
-      id:'exemplo-1',
-      familia:'Família Oliveira',
-      quantidade:3,
-      participantes:['Ana Oliveira','Carlos Oliveira','Beatriz Oliveira'],
-      participacao:'Sim, participaremos da missa e do almoço',
-      mensagem:'Que alegria celebrar uma história tão linda. Que Deus continue abençoando essa união e enchendo a vida de vocês de amor.',
-      created_at:'2026-05-31T12:00:00'
-    },
-    {
-      id:'exemplo-2',
-      familia:'Família Martins',
-      quantidade:2,
-      participantes:['Rita Martins','Paulo Martins'],
-      participacao:'Sim, participaremos da missa e do almoço',
-      mensagem:'Vocês são exemplo de carinho, fé e companheirismo. Parabéns por esses 60 anos de amor.',
-      created_at:'2026-05-31T12:00:00'
-    }
-  ];
-}
-
-document.querySelectorAll('.nav button').forEach(btn => btn.onclick = () => {
-  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById(btn.dataset.tab).classList.add('active');
-  pageTitle.textContent = tabs[btn.dataset.tab][0];
-  pageSub.textContent = tabs[btn.dataset.tab][1];
-  render();
-});
-
-function escapeHtml(str){
-  return String(str || '').replace(/[&<>'"]/g, c => ({
-    '&':'&amp;',
-    '<':'&lt;',
-    '>':'&gt;',
-    "'":'&#39;',
-    '"':'&quot;'
-  }[c]));
-}
-
-function formatDate(value){
-  if (!value) return '';
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleDateString('pt-BR');
-}
-
-function normalizar(row){
-  return {
-    id: row.id,
-    familia: row.familia || '',
-    quantidade: row.quantidade || row.qtd || 0,
-    participantes: Array.isArray(row.participantes) ? row.participantes : (row.nomes || []),
-    participacao: row.participacao || row.almoco || '',
-    mensagem: row.mensagem || '',
-    created_at: row.created_at || row.data || ''
-  };
-}
-
-async function carregarDados(){
-  if (!sb){
-    render();
-    return;
+document.querySelectorAll('.nav button').forEach(btn=>btn.onclick=()=>{document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.getElementById(btn.dataset.tab).classList.add('active');render();});
+function escapeHtml(str){return String(str||'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function formatDate(v){if(!v)return '';const d=new Date(v);return Number.isNaN(d.getTime())?'':d.toLocaleDateString('pt-BR');}
+function normalizar(row){return{id:row.id,familia:row.familia||'',quantidade:row.quantidade||row.qtd||0,participantes:Array.isArray(row.participantes)?row.participantes:(row.nomes||[]),participacao:row.participacao||row.almoco||'',mensagem:row.mensagem||'',created_at:row.created_at||row.data||''};}
+function mensagens(){return data.filter(x=>(x.mensagem||'').trim());}
+async function carregarDados(){if(!sb){render();return;}countRows.textContent='Carregando...';const {data:rows,error}=await sb.from(TABLE_NAME).select('*').order('created_at',{ascending:false});if(error){console.error(error);tbody.innerHTML='<tr><td colspan="6" class="empty">Erro ao carregar. Confira URL, chave, tabela e políticas do Supabase.</td></tr>';return;}data=(rows||[]).map(normalizar);render();}
+function render(){const q=(document.getElementById('searchInput')?.value||'').toLowerCase();const filtered=data.filter(x=>((x.familia||'')+' '+(x.participantes||[]).join(' ')+' '+(x.participacao||'')).toLowerCase().includes(q));const msgs=mensagens();countRows.textContent=filtered.length+' registros';statPessoas.textContent=data.reduce((s,x)=>s+(Number(x.quantidade)||0),0);statMensagens.textContent=msgs.length;statAlmoco.textContent=data.filter(x=>(x.participacao||'').toLowerCase().includes('almoço')).reduce((s,x)=>s+(Number(x.quantidade)||0),0);tbody.innerHTML=filtered.map(x=>{const i=data.indexOf(x);return`<tr><td data-label="Família"><strong>${escapeHtml(x.familia)}</strong><br><span class="muted">${formatDate(x.created_at)}</span></td><td data-label="Participantes">${(x.participantes||[]).map(n=>`<div>${escapeHtml(n)}</div>`).join('')}</td><td data-label="Qtd."><span class="pill">${escapeHtml(x.quantidade)}</span></td><td data-label="Almoço">${escapeHtml(x.participacao)}</td><td data-label="Mensagem">${x.mensagem?'<span class="pill ok">Sim</span>':'<span class="muted">Não</span>'}</td><td data-label="Ações"><div class="row-actions">${x.mensagem?`<button class="mini-btn" onclick="goPDF(${i})">PDF</button>`:''}<button class="mini-btn" onclick="removeItem(${i})">Excluir</button></div></td></tr>`}).join('')||'<tr><td colspan="6" class="empty">Nenhum registro encontrado.</td></tr>';messagesGrid.innerHTML=msgs.map(x=>{const i=data.indexOf(x);return`<article class="message-card"><h3>${escapeHtml(x.familia)}</h3><div class="names">${escapeHtml((x.participantes||[]).join(', '))}</div><blockquote>“${escapeHtml(x.mensagem)}”</blockquote><button class="mini-btn" onclick="goPDF(${i})">Gerar PDF desta</button></article>`}).join('')||'<div class="card empty">Nenhuma mensagem recebida ainda.</div>';pdfSelect.innerHTML=msgs.map(x=>`<option value="${data.indexOf(x)}">${escapeHtml(x.familia)}</option>`).join('');renderA6Preview();}
+function renderA6Preview(){const msgs=mensagens().slice(0,4);a6Preview.innerHTML=msgs.map(x=>`<div class="mini-card"><div><div class="small">Bodas de Diamante</div><h4>João Francisco & Quitéria</h4><div class="small">${escapeHtml(x.familia)}</div></div><p>“${escapeHtml(x.mensagem)}”</p><span>${escapeHtml((x.participantes||[]).join(', '))}</span></div>`).join('')||'<div class="empty">Nenhuma mensagem para pré-visualizar.</div>';}
+function goPDF(i){document.querySelector('[data-tab="pdfs"]').click();setTimeout(()=>{pdfSelect.value=i;statusMsg.textContent='Mensagem selecionada: '+(data[i]?.familia||'');},60)}
+async function removeItem(i){const item=data[i];if(!item||!confirm('Deseja excluir esta confirmação?'))return;if(sb&&item.id){const {error}=await sb.from(TABLE_NAME).delete().eq('id',item.id);if(error){console.error(error);alert('Não foi possível excluir. Confira a política de DELETE no Supabase.');return;}}data.splice(i,1);render();}
+function cardHTML(x){return`<article class="a6-card">
+  <div class="corner tl"></div><div class="corner br"></div>
+  <div class="diamond-mini" aria-hidden="true"><svg viewBox="0 0 80 70"><path d="M14 25 26 9h28l12 16-26 38Z"/><path d="M14 25h52M26 9l9 16 5 38M54 9l-9 16-5 38M35 25h10"/></svg></div>
+  <div class="card-top"><div class="small">Bodas de Diamante</div><h2>João Francisco & Quitéria</h2><div class="family">Mensagem de ${escapeHtml(x.familia)}</div></div>
+  <div class="message-wrap"><blockquote>“${escapeHtml(x.mensagem||'')}”</blockquote></div>
+  <div class="card-bottom"><div class="sign">Com carinho,<br><span>${escapeHtml((x.participantes||[]).join(', '))}</span></div><div class="date">28 de Junho de 2026</div></div>
+</article>`;}
+function buildPrintHTML(items,title){
+  const sheets=[];
+  for(let i=0;i<items.length;i+=4){
+    sheets.push(`<section class="sheet">${items.slice(i,i+4).map(cardHTML).join('')}</section>`);
   }
-
-  countRows.textContent = 'Carregando...';
-
-  const { data: rows, error } = await sb
-    .from(TABLE_NAME)
-    .select('*')
-    .order('created_at', { ascending:false });
-
-  if (error){
-    console.error(error);
-    tbody.innerHTML = '<tr><td colspan="6" class="empty">Erro ao carregar. Confira URL, chave, tabela e políticas do Supabase.</td></tr>';
-    messagesGrid.innerHTML = '<div class="card empty">Erro ao carregar mensagens.</div>';
-    pdfPreview.innerHTML = '<div class="empty">Erro ao carregar PDF.</div>';
-    return;
-  }
-
-  data = (rows || []).map(normalizar);
-  render();
-}
-
-function render(){
-  let q = (document.getElementById('searchInput')?.value || '').toLowerCase();
-  let filtered = data.filter(x => (
-    (x.familia || '') + ' ' + (x.participantes || []).join(' ') + ' ' + (x.participacao || '')
-  ).toLowerCase().includes(q));
-
-  countRows.textContent = filtered.length + ' registros';
-
-  tbody.innerHTML = filtered.map(x => {
-    const i = data.indexOf(x);
-    const nomes = (x.participantes || []).map(n => `<div>${escapeHtml(n)}</div>`).join('');
-    return `<tr>
-      <td data-label="Família"><strong>${escapeHtml(x.familia)}</strong><br><span class="muted">${formatDate(x.created_at)}</span></td>
-      <td data-label="Participantes">${nomes}</td>
-      <td data-label="Qtd."><span class="pill">${escapeHtml(x.quantidade)}</span></td>
-      <td data-label="Almoço">${escapeHtml(x.participacao)}</td>
-      <td data-label="Mensagem">${x.mensagem ? '<span class="pill ok">Sim</span>' : '<span class="muted">Não</span>'}</td>
-      <td data-label="Ações">
-        ${x.mensagem ? `<button class="mini-btn" onclick="goPDF(${i})">PDF</button>` : ''}
-        <button class="mini-btn" onclick="removeItem(${i})">Excluir</button>
-      </td>
-    </tr>`;
-  }).join('') || '<tr><td colspan="6" class="empty">Nenhum registro encontrado.</td></tr>';
-
-  const mensagens = data.filter(x => x.mensagem);
-  messagesGrid.innerHTML = mensagens.map(x => {
-    const i = data.indexOf(x);
-    return `<div class="message-card">
-      <div class="from">
-        <div>
-          <h3>${escapeHtml(x.familia)}</h3>
-          <div class="muted">${escapeHtml((x.participantes || []).join(', '))}</div>
-        </div>
-        <button class="mini-btn" onclick="goPDF(${i})">Gerar PDF</button>
-      </div>
-      <p>“${escapeHtml(x.mensagem)}”</p>
-    </div>`;
-  }).join('') || '<div class="card empty">Nenhuma mensagem recebida ainda.</div>';
-
-  pdfSelect.innerHTML = mensagens.map(x => {
-    const i = data.indexOf(x);
-    return `<option value="${i}">${escapeHtml(x.familia)}</option>`;
-  }).join('');
-
-  renderPDFPreview();
-}
-
-function renderPDFPreview(){
-  let sel = document.getElementById('pdfSelect');
-  let idx = sel && sel.value !== '' ? Number(sel.value) : data.findIndex(x => x.mensagem);
-  let x = data[idx];
-
-  pdfPreview.innerHTML = x ? `
-    <div>
-      <div class="small">Bodas de Diamante</div>
-      <h2>João Francisco & Quitéria</h2>
-      <div class="small">Mensagem de ${escapeHtml(x.familia)}</div>
-    </div>
-    <div>
-      <blockquote>“${escapeHtml(x.mensagem || '')}”</blockquote>
-      <div class="sign">Com carinho,<br>${escapeHtml((x.participantes || []).join(', '))}</div>
-    </div>
-    <div class="date">28 de Junho de 2026</div>
-  ` : '<div class="empty">Selecione uma mensagem.</div>';
-}
-
-function goPDF(i){
-  document.querySelector('[data-tab="pdfs"]').click();
-  setTimeout(() => {
-    pdfSelect.value = i;
-    renderPDFPreview();
-  }, 50);
-}
-
-async function removeItem(i){
-  const item = data[i];
-  if (!item) return;
-
-  if (!confirm('Deseja excluir esta confirmação?')) return;
-
-  if (sb && item.id){
-    const { error } = await sb.from(TABLE_NAME).delete().eq('id', item.id);
-    if (error){
-      console.error(error);
-      alert('Não foi possível excluir. Confira a política de DELETE no Supabase.');
-      return;
-    }
-  }
-
-  data.splice(i, 1);
-  render();
-}
-
-function printSelectedPDF(){
-  let content = pdfPreview.innerHTML;
-  if (!content || content.includes('Selecione uma mensagem')) {
-    alert('Selecione uma mensagem antes.');
-    return;
-  }
-
-  let w = window.open('', '_blank');
-  w.document.write(`<html><head><title>Mensagem Bodas</title>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>${escapeHtml(title)}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
   @page{size:A4 portrait;margin:0}
   *{box-sizing:border-box}
-  body{margin:0;background:#efe7d7;color:#2f261e;font-family:Inter,system-ui,sans-serif}
-  .page{width:210mm;height:297mm;padding:14mm;background:#efe7d7;display:flex}
-  .message-sheet{width:100%;height:100%;padding:18mm 14mm;text-align:center;border:1.5px solid #d4b46f;background:#f8f1e4;position:relative;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
-  .message-sheet:before,.message-sheet:after{content:"";position:absolute;width:36mm;height:36mm}
-  .message-sheet:before{top:8mm;left:8mm;border-top:1px solid rgba(54,48,39,.58);border-left:1px solid rgba(54,48,39,.58)}
-  .message-sheet:after{right:8mm;bottom:8mm;border-right:1px solid rgba(54,48,39,.58);border-bottom:1px solid rgba(54,48,39,.58)}
-  .small{letter-spacing:.34em;text-transform:uppercase;color:#a27a2d;font-size:12px;font-weight:800}
-  h2{font-family:Fraunces,serif;font-size:44px;line-height:1.06;font-weight:500;margin:22px 0;color:#2f261e;letter-spacing:-.03em}
-  blockquote{font-family:Fraunces,serif;font-size:33px;line-height:1.5;margin:45px auto 36px;color:#3b2f25;max-width:170mm;font-weight:400}
-  .sign{font-family:Fraunces,serif;font-size:28px;line-height:1.2;color:#a27a2d}
-  .date{margin-top:25px;color:#776b5b;font-size:16px;font-weight:500}
-  @media print{body{background:#efe7d7}.page{page-break-after:always}}
-  </style></head><body><div class="page"><div class="message-sheet">${content}</div></div><script>window.onload=()=>window.print()<\/script></body></html>`);
-  w.document.close();
+  html,body{margin:0;padding:0;background:#fff;color:#132238;font-family:Inter,system-ui,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sheet{width:210mm;height:297mm;display:grid;grid-template-columns:105mm 105mm;grid-template-rows:148.5mm 148.5mm;background:#fff;page-break-after:always;break-after:page}
+  .sheet:last-child{page-break-after:auto;break-after:auto}
+  .a6-card{width:105mm;height:148.5mm;padding:9mm 7mm 7.5mm;background:linear-gradient(180deg,#fbfdff 0%,#eef7ff 100%);border:.28mm solid rgba(142,197,255,.65);position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;text-align:center;break-inside:avoid;color:#132238}
+  .a6-card:before{content:'';position:absolute;inset:4.8mm;border:.22mm solid rgba(38,76,120,.24);pointer-events:none}
+  .a6-card:after{content:'';position:absolute;left:-28mm;top:-28mm;width:76mm;height:76mm;border-radius:50%;background:radial-gradient(circle,rgba(142,197,255,.36),rgba(142,197,255,.10) 42%,transparent 70%);pointer-events:none}
+  .corner{position:absolute;width:23mm;height:23mm;pointer-events:none;z-index:2}
+  .corner.tl{left:5.2mm;top:5.2mm;border-top:.32mm solid rgba(29,57,92,.55);border-left:.32mm solid rgba(29,57,92,.55)}
+  .corner.br{right:5.2mm;bottom:5.2mm;border-right:.32mm solid rgba(29,57,92,.55);border-bottom:.32mm solid rgba(29,57,92,.55)}
+  .diamond-mini{position:absolute;top:8.5mm;left:50%;transform:translateX(-50%);opacity:.30;color:#68aee8;z-index:0}.diamond-mini svg{width:17mm;height:auto}.diamond-mini path{fill:none;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round}
+  .card-top,.message-wrap,.card-bottom{position:relative;z-index:1}
+  .small{letter-spacing:.32em;text-transform:uppercase;color:#2d73a9;font-size:7.2pt;font-weight:800;line-height:1.35;margin-top:4mm}
+  h2{font-family:Fraunces,Georgia,serif;font-size:20pt;line-height:1.02;font-weight:500;margin:5mm 0 4mm;color:#101827;letter-spacing:-.045em;white-space:nowrap}
+  .family{letter-spacing:.24em;text-transform:uppercase;color:#6f8aa5;font-size:7pt;font-weight:800;line-height:1.45}
+  .message-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:3mm 2mm}
+  blockquote{font-family:Fraunces,Georgia,serif;font-size:15pt;line-height:1.38;color:#17243a;margin:0 auto;max-width:86mm;font-weight:400}
+  .sign{font-family:Fraunces,Georgia,serif;font-size:12.2pt;line-height:1.18;color:#2d73a9}.sign span{color:#2d73a9}
+  .date{margin-top:4mm;color:#697b8d;font-size:8.4pt;font-weight:700}
+  @media print{.sheet{page-break-after:always}.sheet:last-child{page-break-after:auto}}
+  </style></head><body>${sheets.join('')}</body></html>`;
 }
-
+function openPrint(items,title){
+  if(!items.length){alert('Nenhuma mensagem para gerar PDF.');return;}
+  const html=buildPrintHTML(items,title);
+  const frame=document.createElement('iframe');
+  frame.style.position='fixed';
+  frame.style.right='0';
+  frame.style.bottom='0';
+  frame.style.width='0';
+  frame.style.height='0';
+  frame.style.border='0';
+  document.body.appendChild(frame);
+  const doc=frame.contentWindow.document;
+  doc.open();
+  doc.write(html);
+  doc.close();
+  setTimeout(()=>{
+    frame.contentWindow.focus();
+    frame.contentWindow.print();
+    setTimeout(()=>frame.remove(),1200);
+  },500);
+}
+function printSelectedPDF(){const idx=Number(pdfSelect.value);const item=data[idx];if(!item||!item.mensagem){alert('Selecione uma mensagem.');return;}openPrint([item],'Mensagem individual');}
+function printAllPDF(){openPrint(mensagens(),'Todas as mensagens');}
 carregarDados();
 </script>
 </body>
