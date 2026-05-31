@@ -624,7 +624,6 @@
 <script>
 const SUPABASE_URL = "https://yssmxwenzecgtwbilcmn.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_MVwXYm50sunwbC0jWrpbmA_HyKN-WFE";
-const WHATSAPP_NUMBER = "5531999999999";
 
 function supabaseConfigurado(){
   return SUPABASE_URL.startsWith('https://') &&
@@ -666,12 +665,6 @@ document.getElementById('rsvpForm').addEventListener('submit', async e => {
     return;
   }
 
-  const w = "Bodas de Diamante\n\nFamília: " + familia +
-    "\n\nParticipantes:\n" + participantes.map(n => '- ' + n).join('\n') +
-    "\n\nQuantidade: " + quantidade +
-    "\n\nParticipação: " + participacao +
-    "\n\nMensagem:\n" + (mensagem || '—');
-
   try{
     if (supabaseConfigurado()){
       msg.textContent = 'Salvando confirmação...';
@@ -680,11 +673,10 @@ document.getElementById('rsvpForm').addEventListener('submit', async e => {
         familia, quantidade, participantes, participacao, mensagem
       }]);
       if (error) throw error;
-      msg.textContent = 'Presença confirmada com sucesso!';
+      msg.textContent = 'Sua presença foi confirmada. Obrigado por celebrar conosco.';
     } else {
       msg.textContent = 'Confirmação pronta. Configure o Supabase para salvar no painel.';
     }
-    window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(w), '_blank');
     e.target.reset();
     pBox.innerHTML = '<input placeholder="Participante 1" aria-label="Participante 1">';
   } catch (error){
