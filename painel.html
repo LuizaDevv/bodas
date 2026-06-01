@@ -130,23 +130,26 @@ function buildPrintHTML(items,title){
 function openPrint(items,title){
   if(!items.length){alert('Nenhuma mensagem para gerar PDF.');return;}
   const html=buildPrintHTML(items,title);
-  const frame=document.createElement('iframe');
-  frame.style.position='fixed';
-  frame.style.right='0';
-  frame.style.bottom='0';
-  frame.style.width='0';
-  frame.style.height='0';
-  frame.style.border='0';
-  document.body.appendChild(frame);
-  const doc=frame.contentWindow.document;
-  doc.open();
-  doc.write(html);
-  doc.close();
-  setTimeout(()=>{
-    frame.contentWindow.focus();
-    frame.contentWindow.print();
-    setTimeout(()=>frame.remove(),1200);
-  },500);
+
+  // Abre a mensagem em uma nova tela.
+  // No celular, imprimir dentro de iframe costuma imprimir o painel inteiro.
+  // Em nova janela/aba, o navegador imprime somente o cartão A6.
+  const printWindow = window.open('', '_blank');
+  if(!printWindow){
+    alert('O navegador bloqueou a janela de impressão. Permita pop-ups para este painel.');
+    return;
+  }
+
+  printWindow.document.open();
+  printWindow.document.write(html);
+  printWindow.document.close();
+
+  printWindow.onload = () => {
+    setTimeout(() => {
+      printWindow.focus();
+      printWindow.print();
+    }, 350);
+  };
 }
 function printAllPDF(){openPrint(mensagens(),'Todas as mensagens');}
 carregarDados();
